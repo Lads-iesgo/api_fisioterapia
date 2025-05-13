@@ -1,5 +1,8 @@
-import { Request, Response, NextFunction } from "express";
 import pool from "../config/db";
+
+import { UserInterface } from "../interfaces/types";
+
+import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 
 const saltRounds = 10; // Custo do processamento do hash da senha
@@ -60,7 +63,7 @@ export const createUser = async (
       cpf,
       semestre,
       perfil_id,
-    } = req.body;
+    }: UserInterface = req.body;
 
     if (!nome_completo || !email || !senha || perfil_id === undefined) {
       res.status(400).json({
@@ -99,7 +102,7 @@ export const createUser = async (
       [nome_completo, email, senha_hash, telefone, cpf, semestre, perfil_id]
     );
 
-    const novoUsuario = {
+    const novoUsuario: UserInterface = {
       id: result.insertId,
       nome_completo,
       email,
@@ -112,9 +115,12 @@ export const createUser = async (
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
     // Adicionar tratamento para erros de chave única (email, cpf) se não tratados acima
-    if ((error as any).code === 'ER_DUP_ENTRY') {
-        res.status(409).json({ message: "Erro: Email ou CPF já cadastrado.", details: (error as any).sqlMessage });
-        return;
+    if ((error as any).code === "ER_DUP_ENTRY") {
+      res.status(409).json({
+        message: "Erro: Email ou CPF já cadastrado.",
+        details: (error as any).sqlMessage,
+      });
+      return;
     }
     next(error);
   }
@@ -130,8 +136,14 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const { nome_completo, email, telefone, cpf, semestre, perfil_id } =
-      req.body;
+    const {
+      nome_completo,
+      email,
+      telefone,
+      cpf,
+      semestre,
+      perfil_id,
+    }: UserInterface = req.body;
 
     // Coleta os campos que foram fornecidos para atualização
     const fieldsToUpdate: string[] = [];
@@ -148,7 +160,9 @@ export const updateUser = async (
         [email, id]
       );
       if (existingUser.length > 0) {
-        res.status(409).json({ message: "Novo email já cadastrado para outro usuário." });
+        res
+          .status(409)
+          .json({ message: "Novo email já cadastrado para outro usuário." });
         return;
       }
       fieldsToUpdate.push("email = ?");
@@ -159,13 +173,15 @@ export const updateUser = async (
       values.push(telefone);
     }
     if (cpf !== undefined) {
-       // Verifica se o novo CPF já existe para outro usuário
-       const [existingCpf]: any[] = await pool.query(
+      // Verifica se o novo CPF já existe para outro usuário
+      const [existingCpf]: any[] = await pool.query(
         "SELECT id FROM usuario WHERE cpf = ? AND id != ?",
         [cpf, id]
       );
       if (existingCpf.length > 0) {
-        res.status(409).json({ message: "Novo CPF já cadastrado para outro usuário." });
+        res
+          .status(409)
+          .json({ message: "Novo CPF já cadastrado para outro usuário." });
         return;
       }
       fieldsToUpdate.push("cpf = ?");
@@ -209,9 +225,12 @@ export const updateUser = async (
     res.status(200).json(updatedUserRows[0]);
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
-     if ((error as any).code === 'ER_DUP_ENTRY') {
-        res.status(409).json({ message: "Erro: Email ou CPF já cadastrado.", details: (error as any).sqlMessage });
-        return;
+    if ((error as any).code === "ER_DUP_ENTRY") {
+      res.status(409).json({
+        message: "Erro: Email ou CPF já cadastrado.",
+        details: (error as any).sqlMessage,
+      });
+      return;
     }
     next(error);
   }
