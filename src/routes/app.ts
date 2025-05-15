@@ -12,8 +12,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/paciente", clientRoutes);
 app.use("/usuario", userRoutes);
+// app.use("/paciente", clientRoutes); // Exemplo para rotas de paciente
 app.use("/perfil", perfilRoutes);
 app.use("/consulta", consultaRoutes);
 app.use("/horario", horarioRoutes);
