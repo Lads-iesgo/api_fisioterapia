@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/usuario", userRoutes);
-// app.use("/paciente", clientRoutes); // Exemplo para rotas de paciente
+app.use("/paciente", clientRoutes); // Exemplo para rotas de paciente
 app.use("/perfil", perfilRoutes);
 app.use("/consulta", consultaRoutes);
 app.use("/horario", horarioRoutes);
