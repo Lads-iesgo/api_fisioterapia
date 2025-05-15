@@ -1,17 +1,19 @@
-import express from "express";
+import { Router } from "express";
 import {
   getUsers,
   getUsersById,
   createUser,
   updateUser,
+  getFisioterapeutas, // Importe a nova função
 } from "../controller/userController";
 
-const router = express.Router();
+const router = Router();
 
-// Rotas de Usuários
-router.get("/", getUsers); // GET /api/users
-router.get("/:id", getUsersById); // GET /api/users/:id
-router.post("/", createUser); // POST /api/users
-router.put("/:id", updateUser); // PUT /api/users/:id
+router.get("/", getUsers);
+router.get("/fisioterapeutas", getFisioterapeutas); // Nova rota
+router.get("/:id", getUsersById);
+router.post("/", createUser);
+router.put("/:id", updateUser);
+// router.delete("/:id", deleteUser); // Se você implementar a deleção
 
 export default router;
