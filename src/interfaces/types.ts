@@ -26,3 +26,8 @@ export interface PerfilInterface {
   id?: number;
   nome: string;
 }
+
+export interface HorarioAgendamentoInterface {
+  id?: number;
+  horario: string; // Formato TIME, ex: "08:00:00"
+}
