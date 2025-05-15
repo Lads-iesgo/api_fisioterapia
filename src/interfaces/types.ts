@@ -26,3 +26,17 @@ export interface PerfilInterface {
   id?: number;
   nome: string;
 }
+
+export interface ConsultaInterface {
+  id?: number;
+  paciente_id: number;
+  data_consulta: Date | string;
+  horario_id: number;
+  fisioterapeuta_id: number;
+  status?: string;
+}
+
+export interface HorarioInterface {
+  id?: number;
+  horario: string;
+}
