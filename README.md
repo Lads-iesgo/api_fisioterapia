@@ -59,35 +59,17 @@ O servidor será iniciado em http://localhost:3333 (ou na porta definida na vari
 
 ## Rotas Disponíveis
 
-### Usuários (`/usuario`)
-- `GET /usuario` — Lista todos os usuários
-- `GET /usuario/:id` — Busca usuário por ID
-- `POST /usuario` — Cria um novo usuário
-- `PUT /usuario/:id` — Atualiza um usuário existente
+- **Usuários**
+  - `GET /usuarios` - Lista todos os usuários
+  - `GET /usuarios/:id` - Busca usuário por ID
+  - `POST /usuarios` - Cria um novo usuário
+  - `PUT /usuarios/:id` - Atualiza um usuário existente
 
-### Pacientes (`/paciente`)
-- `GET /paciente` — Lista todos os pacientes
-- `GET /paciente/:id` — Busca paciente por ID
-- `POST /paciente` — Cria um novo paciente
-- `PUT /paciente/:id` — Atualiza um paciente existente
-
-### Perfis (`/perfil`)
-- `GET /perfil` — Lista todos os perfis
-- `GET /perfil/:id` — Busca perfil por ID
-- `POST /perfil` — Cria um novo perfil
-- `PUT /perfil/:id` — Atualiza um perfil existente
-
-### Consultas (`/consulta`)
-- `GET /consulta` — Lista todas as consultas
-- `GET /consulta/:id` — Busca consulta por ID
-- `POST /consulta` — Cria uma nova consulta
-- `PUT /consulta/:id` — Atualiza uma consulta existente
-
-### Horários de Agendamento (`/horario`)
-- `GET /horario` — Lista todos os horários de agendamento
-- `GET /horario/:id` — Busca horário de agendamento por ID
-- `POST /horario` — Cria um novo horário de agendamento
-- `PUT /horario/:id` — Atualiza um horário de agendamento existente
+- **Clientes**
+  - `GET /clientes` - Lista todos os clientes
+  - `GET /clientes/:id` - Busca cliente por ID
+  - `POST /clientes` - Cria um novo cliente
+  - `PUT /clientes/:id` - Atualiza um cliente existente
 
 ## Branches
 
