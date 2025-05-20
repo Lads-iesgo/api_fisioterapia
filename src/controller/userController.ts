@@ -6,6 +6,8 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 
 const saltRounds = 10; // Custo do processamento do hash da senha
+// IMPORTANTE: Defina o ID correto para o perfil de Fisioterapeuta/Aluno
+const PERFIL_ID_FISIOTERAPEUTA = 2; // <--- SUBSTITUA PELO ID CORRETO DO SEU BANCO DE DADOS
 
 // Lista todos os usuários (sem a senha)
 export const getUsers = async (
@@ -232,6 +234,24 @@ export const updateUser = async (
       });
       return;
     }
+    next(error);
+  }
+};
+
+// Busca todos os usuários que são Fisioterapeutas/Alunos
+export const getFisioterapeutas = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario WHERE perfil_id = ?",
+      [PERFIL_ID_FISIOTERAPEUTA] // Filtra pelo ID do perfil de fisioterapeuta
+    );
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Erro ao buscar fisioterapeutas:", error);
     next(error);
   }
 };

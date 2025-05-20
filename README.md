@@ -64,6 +64,7 @@ O servidor será iniciado em http://localhost:3333 (ou na porta definida na vari
 - `GET /usuario/:id` — Busca usuário por ID
 - `POST /usuario` — Cria um novo usuário
 - `PUT /usuario/:id` — Atualiza um usuário existente
+- `GET /usuario/fisioterapeutas` — Lista todos os usuários com perfil de fisioterapeuta/aluno
 
 ### Pacientes (`/paciente`)
 - `GET /paciente` — Lista todos os pacientes

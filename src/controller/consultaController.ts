@@ -46,12 +46,17 @@ export const createConsulta = async (
   next: NextFunction
 ) => {
   try {
-    const {
+    let {
       paciente_id,
       data_consulta,
       horario_id,
       fisioterapeuta_id,
     }: ConsultaInterface = req.body;
+
+    // Converte para 'YYYY-MM-DD' se vier no formato ISO
+    if (typeof data_consulta === "string" && data_consulta.includes("T")) {
+      data_consulta = data_consulta.split("T")[0];
+    }
 
     const [result]: any = await pool.query(
       "INSERT INTO consulta (paciente_id, data_consulta, horario_id, fisioterapeuta_id) VALUES (?, ?, ?, ?)",
@@ -67,7 +72,14 @@ export const createConsulta = async (
     };
 
     res.status(201).json(newConsulta);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === "ER_DUP_ENTRY") {
+      res.status(409).json({
+        message:
+          "Já existe uma consulta para esse paciente, data, horário e fisioterapeuta.",
+      });
+      return;
+    }
     next(error);
   }
 };
