@@ -131,3 +131,27 @@ export const updateConsulta = async (
     next(error);
   }
 };
+
+export const deleteConsulta = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id, 10);
+
+    const [result]: any = await pool.query(
+      "DELETE FROM consulta WHERE id = ?",
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ message: "Consulta não encontrada" });
+      return;
+    }
+
+    res.status(200).json({ message: "Consulta excluída com sucesso" });
+  } catch (error) {
+    next(error);
+  }
+};
