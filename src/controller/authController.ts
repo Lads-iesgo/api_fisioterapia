@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     // Verifica se a senha está correta
     const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
     if (!senhaValida) {
-      res.status(401).json({ message: "Senha inválida." });
+      res.status(401).json({ message: "Usuario ou senha inválido." });
       return;
     }
 
