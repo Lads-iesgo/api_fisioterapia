@@ -6,11 +6,16 @@ import {
   updatePaciente,
 } from "../controller/pacienteController";
 
+import { authMiddleware } from "../middleware/authMiddleware";
+import authorize from "../middleware/authorize";
+
 const router = express.Router();
 
-//Rotas Paciente
-router.get("/", getPaciente); // GET /paciente
-router.get("/:id", getPacienteById); // GET /paciente/:id
+//Rotas Professor / Coordenador / Admin
+router.get("/", authMiddleware, authorize("paciente", "read:any"), getPaciente); // GET /paciente 
+//Rota Aluno
+router.get("/", authMiddleware, authorize("paciente", "read:own"), getPaciente); // GET /paciente 
+router.get("/:id", authMiddleware, authorize("paciente", "read:any"), getPacienteById); // GET /paciente/:id
 router.post("/", createPaciente); // POST /paciente
 router.put("/:id", updatePaciente); // PUT /paciente/:id
 
