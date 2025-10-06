@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from "express";
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: number; email: string; role: string };
+      user?: { id: number; email: string; role: string; perfil_id?: number };
     }
   }
 }
@@ -18,7 +18,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number; email: string; role: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number; email: string; role: string; perfil_id?: number };
     req.user = decoded;
     next();
   } catch (error) {

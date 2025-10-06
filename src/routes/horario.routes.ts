@@ -1,4 +1,6 @@
 import express from "express";
+import { authMiddleware } from "../middleware/authMiddleware";
+import authorize from "../middleware/authorize";
 import {
   getHorario,
   getHorarioById,
@@ -8,10 +10,10 @@ import {
 
 const router = express.Router();
 
-//Rotas Perfil
-router.get("/", getHorario); // GET /horario
-router.get("/:id", getHorarioById); // GET horario/:id
-router.post("/", createHorario); // POST /horario
-router.put("/:id", updateHorario); // PUT /horario/:id
+//Rotas Horário
+router.get("/", authMiddleware, authorize("horario", "read:any"), getHorario); // GET /horario
+router.get("/:id", authMiddleware, authorize("horario", "read:any"), getHorarioById); // GET horario/:id
+router.post("/", authMiddleware, authorize("horario", "update:any"), createHorario); // POST /horario
+router.put("/:id", authMiddleware, authorize("horario", "update:any"), updateHorario); // PUT /horario/:id
 
 export default router;

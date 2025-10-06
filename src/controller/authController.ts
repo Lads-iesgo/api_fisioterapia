@@ -41,7 +41,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         [usuario.perfil_id]
       );
       if (perfilRows.length > 0) {
-        nomePerfil = perfilRows[0].nome;
+        // Normaliza para lowercase para compatibilidade com o sistema de roles
+        nomePerfil = perfilRows[0].nome.toLowerCase();
       }
     }
 
@@ -60,7 +61,9 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
     const tokenPayload = {
       id: usuario.id, // ID do usuário
-      role: nomePerfil, // Nome do perfil (role) do usuário
+      email: usuario.email, // Email do usuário
+      role: nomePerfil, // Nome do perfil (role) do usuário (lowercase)
+      perfil_id: usuario.perfil_id, // Mantido para compatibilidade com frontend legado
     };
 
     const token = jwt.sign(tokenPayload, jwtSecret, {
