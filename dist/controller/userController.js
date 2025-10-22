@@ -20,9 +20,20 @@ const saltRounds = 10; // Custo do processamento do hash da senha
 const PERFIL_ID_FISIOTERAPEUTA = 2; // <--- SUBSTITUA PELO ID CORRETO DO SEU BANCO DE DADOS
 // Lista todos os usuários (sem a senha)
 const getUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const [rows] = yield db_1.default.query("SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario");
-        res.status(200).json(rows);
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const accessAction = req.accessAction;
+        // If user has read:own permission (student/aluno), return only their own info
+        if (accessAction === "read:own" && userId) {
+            const [rows] = yield db_1.default.query("SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario WHERE id = ?", [userId]);
+            res.status(200).json(rows);
+        }
+        else {
+            // For read:any (professor, coordenador, admin), return all users
+            const [rows] = yield db_1.default.query("SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario");
+            res.status(200).json(rows);
+        }
     }
     catch (error) {
         console.error("Erro ao buscar usuários:", error);
@@ -32,8 +43,18 @@ const getUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
 exports.getUsers = getUsers;
 // Busca usuário por ID (sem a senha)
 const getUsersById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const id = parseInt(req.params.id, 10);
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const accessAction = req.accessAction;
+        // If user has read:own permission (student/aluno), check if they're requesting their own info
+        if (accessAction === "read:own" && userId) {
+            if (id !== userId) {
+                res.status(403).json({ message: "Você não tem permissão para visualizar este usuário" });
+                return;
+            }
+        }
         const [rows] = yield db_1.default.query("SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario WHERE id = ?", [id]);
         if (rows.length === 0) {
             res.status(404).json({ message: "Usuário não encontrado" });

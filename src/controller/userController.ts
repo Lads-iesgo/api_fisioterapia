@@ -16,10 +16,23 @@ export const getUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const [rows] = await pool.query(
-      "SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario"
-    );
-    res.status(200).json(rows);
+    const userId = req.user?.id;
+    const accessAction = req.accessAction;
+
+    // If user has read:own permission (student/aluno), return only their own info
+    if (accessAction === "read:own" && userId) {
+      const [rows] = await pool.query(
+        "SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario WHERE id = ?",
+        [userId]
+      );
+      res.status(200).json(rows);
+    } else {
+      // For read:any (professor, coordenador, admin), return all users
+      const [rows] = await pool.query(
+        "SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario"
+      );
+      res.status(200).json(rows);
+    }
   } catch (error) {
     console.error("Erro ao buscar usuários:", error);
     next(error);
@@ -34,6 +47,17 @@ export const getUsersById = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
+    const userId = req.user?.id;
+    const accessAction = req.accessAction;
+
+    // If user has read:own permission (student/aluno), check if they're requesting their own info
+    if (accessAction === "read:own" && userId) {
+      if (id !== userId) {
+        res.status(403).json({ message: "Você não tem permissão para visualizar este usuário" });
+        return;
+      }
+    }
+
     const [rows]: any[] = await pool.query(
       "SELECT id, nome_completo, email, telefone, cpf, semestre, perfil_id FROM usuario WHERE id = ?",
       [id]

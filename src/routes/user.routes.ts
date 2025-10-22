@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { authMiddleware } from "../middleware/authMiddleware";
 import authorize from "../middleware/authorize";
 import {
@@ -6,16 +6,34 @@ import {
   getUsersById,
   createUser,
   updateUser,
-  getFisioterapeutas, // Importe a nova função
+  getFisioterapeutas,
 } from "../controller/userController";
 
 const router = Router();
 
-router.get("/", authMiddleware, authorize("user", "read:any"), getUsers);
-router.get("/fisioterapeutas", authMiddleware, authorize("user", "read:any"), getFisioterapeutas); // Nova rota
-router.get("/:id", authMiddleware, authorize("user", "read:any"), getUsersById);
+// GET routes accept both read:own (aluno) and read:any (professor, coordenador, admin)
+router.get("/", authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  const role = req.user?.role;
+  if (role === "aluno") {
+    return authorize("user", "read:own")(req, res, next);
+  } else {
+    return authorize("user", "read:any")(req, res, next);
+  }
+}, getUsers);
+
+router.get("/fisioterapeutas", authMiddleware, authorize("user", "read:any"), getFisioterapeutas);
+
+router.get("/:id", authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  const role = req.user?.role;
+  if (role === "aluno") {
+    return authorize("user", "read:own")(req, res, next);
+  } else {
+    return authorize("user", "read:any")(req, res, next);
+  }
+}, getUsersById);
+
+// POST and PUT only for professor, coordenador, admin
 router.post("/", authMiddleware, authorize("user", "update:any"), createUser);
 router.put("/:id", authMiddleware, authorize("user", "update:any"), updateUser);
-// router.delete("/:id", deleteUser); // Se você implementar a deleção
 
 export default router;

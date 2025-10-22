@@ -43,6 +43,9 @@ const authorize = (resource: Resource, action: Action):RequestHandler => {
       return;
     }
 
+    // Attach the action to the request so controllers can use it for filtering
+    req.accessAction = action;
+
     next();
   };
 };

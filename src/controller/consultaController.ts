@@ -10,8 +10,21 @@ export const getConsulta = async (
   next: NextFunction
 ) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM consulta");
-    res.status(200).json(rows);
+    const userId = req.user?.id;
+    const accessAction = req.accessAction;
+
+    // If user has read:own permission (student/aluno), filter by their consultations
+    if (accessAction === "read:own" && userId) {
+      const [rows] = await pool.query(
+        "SELECT * FROM consulta WHERE fisioterapeuta_id = ?",
+        [userId]
+      );
+      res.status(200).json(rows);
+    } else {
+      // For read:any (professor, coordenador, admin), return all consultations
+      const [rows] = await pool.query("SELECT * FROM consulta");
+      res.status(200).json(rows);
+    }
   } catch (error) {
     next(error);
   }
@@ -24,17 +37,36 @@ export const getConsultaById = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query(
-      "SELECT * FROM consulta WHERE id = ?",
-      [id]
-    );
+    const userId = req.user?.id;
+    const accessAction = req.accessAction;
 
-    if (rows.length === 0) {
-      res.status(404).json({ message: "Consulta não encontrada" });
-      return;
+    // If user has read:own permission (student/aluno), check if it's their consultation
+    if (accessAction === "read:own" && userId) {
+      const [rows]: any = await pool.query(
+        "SELECT * FROM consulta WHERE id = ? AND fisioterapeuta_id = ?",
+        [id, userId]
+      );
+
+      if (rows.length === 0) {
+        res.status(404).json({ message: "Consulta não encontrada ou você não tem permissão para visualizá-la" });
+        return;
+      }
+
+      res.status(200).json(rows[0]);
+    } else {
+      // For read:any (professor, coordenador, admin), return consultation if exists
+      const [rows]: any = await pool.query(
+        "SELECT * FROM consulta WHERE id = ?",
+        [id]
+      );
+
+      if (rows.length === 0) {
+        res.status(404).json({ message: "Consulta não encontrada" });
+        return;
+      }
+
+      res.status(200).json(rows[0]);
     }
-
-    res.status(200).json(rows[0]);
   } catch (error) {
     next(error);
   }
