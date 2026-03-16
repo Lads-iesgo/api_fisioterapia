@@ -1,7 +1,6 @@
-import pool from "../config/db";
-
+import { prisma } from "../config/prisma";
+import { consulta_status } from "@prisma/client";
 import { ConsultaInterface } from "../interfaces/types";
-
 import { Request, Response, NextFunction } from "express";
 
 export const getConsulta = async (
@@ -10,7 +9,7 @@ export const getConsulta = async (
   next: NextFunction
 ) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM consulta");
+    const rows = await prisma.consulta.findMany();
     res.status(200).json(rows);
   } catch (error) {
     next(error);
@@ -24,17 +23,14 @@ export const getConsultaById = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query(
-      "SELECT * FROM consulta WHERE id = ?",
-      [id]
-    );
+    const row = await prisma.consulta.findUnique({ where: { id } });
 
-    if (rows.length === 0) {
+    if (!row) {
       res.status(404).json({ message: "Consulta não encontrada" });
       return;
     }
 
-    res.status(200).json(rows[0]);
+    res.status(200).json(row);
   } catch (error) {
     next(error);
   }
@@ -58,25 +54,20 @@ export const createConsulta = async (
       data_consulta = data_consulta.split("T")[0];
     }
 
-    const [result]: any = await pool.query(
-      "INSERT INTO consulta (paciente_id, data_consulta, horario_id, fisioterapeuta_id) VALUES (?, ?, ?, ?)",
-      [paciente_id, data_consulta, horario_id, fisioterapeuta_id]
-    );
-
-    const newConsulta: ConsultaInterface = {
-      id: result.insertId,
-      paciente_id,
-      data_consulta,
-      horario_id,
-      fisioterapeuta_id,
-    };
+    const newConsulta = await prisma.consulta.create({
+      data: {
+        paciente_id: Number(paciente_id),
+        data_consulta: new Date((data_consulta as string) + "T00:00:00.000Z"),
+        horario_id: Number(horario_id),
+        fisioterapeuta_id: Number(fisioterapeuta_id),
+      },
+    });
 
     res.status(201).json(newConsulta);
   } catch (error: any) {
-    if (error.code === "ER_DUP_ENTRY") {
+    if (error?.code === "P2002") {
       res.status(409).json({
-        message:
-          "Já existe uma consulta para esse paciente, data, horário e fisioterapeuta.",
+        message: "Já existe uma consulta para esse paciente, data, horário e fisioterapeuta.",
       });
       return;
     }
@@ -91,43 +82,40 @@ export const updateConsulta = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const campos = [
-      "paciente_id",
-      "data_consulta",
-      "horario_id",
-      "fisioterapeuta_id",
-      "status",
-    ];
+    const campos = ["paciente_id", "data_consulta", "horario_id", "fisioterapeuta_id", "status"];
 
-    // Monta dinamicamente os campos a serem atualizados
-    const updates = [];
-    const values = [];
+    const updateData: any = {};
     for (const campo of campos) {
       if (req.body[campo] !== undefined) {
-        updates.push(`${campo} = ?`);
-        values.push(req.body[campo]);
+        if (campo === "data_consulta") {
+          const d = req.body[campo];
+          updateData[campo] = new Date(typeof d === "string" && d.includes("T") ? d.split("T")[0] + "T00:00:00.000Z" : d);
+        } else if (["paciente_id", "horario_id", "fisioterapeuta_id"].includes(campo)) {
+          updateData[campo] = Number(req.body[campo]);
+        } else if (campo === "status") {
+          updateData[campo] = (req.body[campo] as consulta_status) ?? null;
+        } else {
+          updateData[campo] = req.body[campo];
+        }
       }
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       res.status(400).json({ message: "Nenhum campo para atualizar." });
       return;
     }
 
-    values.push(id);
+    const updated = await prisma.consulta.update({
+      where: { id },
+      data: updateData,
+    });
 
-    const [result]: any = await pool.query(
-      `UPDATE consulta SET ${updates.join(", ")} WHERE id = ?`,
-      values
-    );
-
-    if (result.affectedRows === 0) {
+    res.status(200).json(updated);
+  } catch (error: any) {
+    if (error?.code === "P2025") {
       res.status(404).json({ message: "Consulta não encontrada" });
       return;
     }
-
-    res.status(200).json({ id, ...req.body });
-  } catch (error) {
     next(error);
   }
 };
@@ -139,19 +127,13 @@ export const deleteConsulta = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-
-    const [result]: any = await pool.query(
-      "DELETE FROM consulta WHERE id = ?",
-      [id]
-    );
-
-    if (result.affectedRows === 0) {
+    await prisma.consulta.delete({ where: { id } });
+    res.status(200).json({ message: "Consulta excluída com sucesso" });
+  } catch (error: any) {
+    if (error?.code === "P2025") {
       res.status(404).json({ message: "Consulta não encontrada" });
       return;
     }
-
-    res.status(200).json({ message: "Consulta excluída com sucesso" });
-  } catch (error) {
     next(error);
   }
 };
