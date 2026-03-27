@@ -168,7 +168,7 @@ export const deleteIndisponibilidade = async (
       where: { id },
     });
 
-    res.status(200).json({ message: "Usuário apagado com sucesso!"});
+    res.status(200).json({ message: "Dia(s) indiponível apagado com sucesso!"});
   } catch (erro: any) {
     if (erro?.code === "P2025") {
       res.status(404).json({ message: "Registro de indisponibilidade não encontrado." });
