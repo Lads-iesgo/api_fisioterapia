@@ -9,7 +9,10 @@ export const getConsulta = async (
   next: NextFunction
 ) => {
   try {
-    const rows = await prisma.consulta.findMany();
+    // Usa isolamento de dados se foi definido pelo middleware
+    const where = (req as any).dataIsolation || {};
+
+    const rows = await prisma.consulta.findMany({ where });
     res.status(200).json(rows);
   } catch (error) {
     next(error);
