@@ -1,7 +1,5 @@
-import pool from "../config/db";
-
+import { prisma } from "../config/prisma";
 import { PerfilInterface } from "../interfaces/types";
-
 import { Request, Response, NextFunction } from "express";
 
 export const getPerfil = async (
@@ -10,7 +8,7 @@ export const getPerfil = async (
   next: NextFunction
 ) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM perfil");
+    const rows = await prisma.perfil.findMany();
     res.status(200).json(rows);
   } catch (error) {
     next(error);
@@ -24,16 +22,14 @@ export const getPerfilById = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query("SELECT * FROM perfil WHERE id = ?", [
-      id,
-    ]);
+    const row = await prisma.perfil.findUnique({ where: { id } });
 
-    if (rows.length === 0) {
+    if (!row) {
       res.status(404).json({ message: "Perfil não encontrado" });
       return;
     }
 
-    res.status(200).json(rows[0]);
+    res.status(200).json(row);
   } catch (error) {
     next(error);
   }
@@ -46,17 +42,7 @@ export const createPerfil = async (
 ) => {
   try {
     const { nome }: PerfilInterface = req.body;
-
-    const [result]: any = await pool.query(
-      "INSERT INTO perfil (nome) VALUES (?)",
-      [nome]
-    );
-
-    const newPerfil: PerfilInterface = {
-      id: result.insertId,
-      nome,
-    };
-
+    const newPerfil = await prisma.perfil.create({ data: { nome } });
     res.status(201).json(newPerfil);
   } catch (error) {
     next(error);
@@ -73,24 +59,17 @@ export const updatePerfil = async (
     const { nome } = req.body;
 
     if (!nome) {
-      res
-        .status(400)
-        .json({ message: "O campo nome é obrigatório para atualização." });
+      res.status(400).json({ message: "O campo nome é obrigatório para atualização." });
       return;
     }
 
-    const [result]: any = await pool.query(
-      "UPDATE perfil SET nome = ? WHERE id = ?",
-      [nome, id]
-    );
-
-    if (result.affectedRows === 0) {
+    const updated = await prisma.perfil.update({ where: { id }, data: { nome } });
+    res.status(200).json(updated);
+  } catch (error: any) {
+    if (error?.code === "P2025") {
       res.status(404).json({ message: "Perfil não encontrado" });
       return;
     }
-
-    res.status(200).json({ id, nome });
-  } catch (error) {
     next(error);
   }
 };

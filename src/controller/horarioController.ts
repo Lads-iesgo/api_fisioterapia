@@ -1,8 +1,28 @@
-import pool from "../config/db";
-
+import { prisma } from "../config/prisma";
 import { HorarioInterface } from "../interfaces/types";
-
 import { Request, Response, NextFunction } from "express";
+
+// Converte o DateTime que Prisma retorna para campos TIME do MySQL para "HH:MM"
+// O Prisma retorna campos TIME como DateTime com data base 1970-01-01T00:00:00Z
+function formatHorario(value: any): string {
+  if (value instanceof Date) {
+    const h = String(value.getUTCHours()).padStart(2, "0");
+    const m = String(value.getUTCMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }
+  if (typeof value === "string") {
+    return value.substring(0, 5);
+  }
+  return String(value ?? "");
+}
+
+// Converte "HH:MM" para Date com base 1970-01-01 (formato esperado pelo Prisma para @db.Time)
+function parseHorario(value: string): Date {
+  const [h, m] = value.split(":").map(Number);
+  const d = new Date(0);
+  d.setUTCHours(h, m, 0, 0);
+  return d;
+}
 
 export const getHorario = async (
   req: Request,
@@ -10,8 +30,12 @@ export const getHorario = async (
   next: NextFunction
 ) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM horario_agendamento");
-    res.status(200).json(rows);
+    const rows = await prisma.horarioAgendamento.findMany();
+    const formatted = rows.map((r: typeof rows[number]) => ({
+      ...r,
+      horario: formatHorario(r.horario),
+    }));
+    res.status(200).json(formatted);
   } catch (error) {
     next(error);
   }
@@ -24,17 +48,14 @@ export const getHorarioById = async (
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query(
-      "SELECT * FROM horario_agendamento WHERE id = ?",
-      [id]
-    );
+    const row = await prisma.horarioAgendamento.findUnique({ where: { id } });
 
-    if (rows.length === 0) {
+    if (!row) {
       res.status(404).json({ message: "Horário não encontrado" });
       return;
     }
 
-    res.status(200).json(rows[0]);
+    res.status(200).json({ ...row, horario: formatHorario(row.horario) });
   } catch (error) {
     next(error);
   }
@@ -48,17 +69,16 @@ export const createHorario = async (
   try {
     const { horario }: HorarioInterface = req.body;
 
-    const [result]: any = await pool.query(
-      "INSERT INTO horario_agendamento (horario) VALUES (?)",
-      [horario]
-    );
+    if (!horario) {
+      res.status(400).json({ message: "O campo horário é obrigatório." });
+      return;
+    }
 
-    const newHorario: HorarioInterface = {
-      id: result.insertId,
-      horario,
-    };
+    const newHorario = await prisma.horarioAgendamento.create({
+      data: { horario: parseHorario(horario as string) },
+    });
 
-    res.status(201).json(newHorario);
+    res.status(201).json({ ...newHorario, horario: formatHorario(newHorario.horario) });
   } catch (error) {
     next(error);
   }
@@ -74,24 +94,21 @@ export const updateHorario = async (
     const { horario } = req.body;
 
     if (!horario) {
-      res
-        .status(400)
-        .json({ message: "O campo horãrio é obrigatório para atualização." });
+      res.status(400).json({ message: "O campo horário é obrigatório para atualização." });
       return;
     }
 
-    const [result]: any = await pool.query(
-      "UPDATE horario_agendamento SET horario = ? WHERE id = ?",
-      [horario, id]
-    );
+    const updated = await prisma.horarioAgendamento.update({
+      where: { id },
+      data: { horario: parseHorario(horario as string) },
+    });
 
-    if (result.affectedRows === 0) {
-      res.status(404).json({ message: "Horãrio não encontrado" });
+    res.status(200).json({ ...updated, horario: formatHorario(updated.horario) });
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      res.status(404).json({ message: "Horário não encontrado" });
       return;
     }
-
-    res.status(200).json({ id, horario });
-  } catch (error) {
     next(error);
   }
 };

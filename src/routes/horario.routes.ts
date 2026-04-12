@@ -8,10 +8,9 @@ import {
 
 const router = express.Router();
 
-//Rotas Perfil
-router.get("/", getHorario); // GET /horario
-router.get("/:id", getHorarioById); // GET horario/:id
-router.post("/", createHorario); // POST /horario
-router.put("/:id", updateHorario); // PUT /horario/:id
+router.get("/", getHorario);
+router.get("/:id", getHorarioById);
+router.post("/", createHorario);
+router.put("/:id", updateHorario);
 
 export default router;
