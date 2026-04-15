@@ -30,6 +30,6 @@ Desktop.ini
 # Para simplicidade, ignorar a pasta inteira é um ponto de partida comum.
 .vscode/
 
-# Docker
+#Docker files
+.dockerignore
 Dockerfile
-.dopckerignore
