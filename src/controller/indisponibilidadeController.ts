@@ -83,7 +83,7 @@ export const getIndisponibilidadeById = async (
   }
 };
 
-// Cria as datas indisponíveis
+// Cria as datas indisponíveis e exclui consultas do dia (transação atômica)
 export const createIndisponibilidade = async (
   req: Request,
   res: Response,
@@ -97,20 +97,30 @@ export const createIndisponibilidade = async (
       return;
     }
 
-    const novaIndisponibilidade = await prisma.indisponibilidade.create({
-      data: {
-        data_indisponivel: new Date (data_indisponivel),
-        descricao: descricao || null,
-        hora_inicio: hora_inicio ? converterHorario(hora_inicio as string) : null,
-        hora_fim: hora_fim ? converterHorario(hora_fim as string) : null,
-      },
-    });
+    const dataAlvo = new Date(data_indisponivel);
+
+    const [consultasExcluidas, novaIndisponibilidade] = await prisma.$transaction([
+      // 1. Exclui todas as consultas agendadas para o dia
+      prisma.consulta.deleteMany({
+        where: { data_consulta: dataAlvo },
+      }),
+      // 2. Cria o registro de indisponibilidade
+      prisma.indisponibilidade.create({
+        data: {
+          data_indisponivel: dataAlvo,
+          descricao: descricao || null,
+          hora_inicio: hora_inicio ? converterHorario(hora_inicio as string) : null,
+          hora_fim: hora_fim ? converterHorario(hora_fim as string) : null,
+        },
+      }),
+    ]);
 
     res.status(201).json({
       ...novaIndisponibilidade,
       data_indisponivel: formatarData(novaIndisponibilidade.data_indisponivel),
       hora_inicio: formatarHorario(novaIndisponibilidade.hora_inicio),
       hora_fim: formatarHorario(novaIndisponibilidade.hora_fim),
+      consultas_excluidas: consultasExcluidas.count,
     });
   } catch (erro) {
     next(erro);

@@ -29,3 +29,7 @@ Desktop.ini
 # Configurações específicas do projeto (launch.json, extensions.json) podem ser versionadas se desejado.
 # Para simplicidade, ignorar a pasta inteira é um ponto de partida comum.
 .vscode/
+
+# Docker
+Dockerfile
+.dopckerignore

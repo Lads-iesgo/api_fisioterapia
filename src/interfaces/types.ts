@@ -18,7 +18,7 @@ export interface UserInterface {
   senha?: string;
   telefone: string;
   cpf: string;
-  semestre: string;
+  semestre?: string | null;
   perfil_id: number;
 }
 
