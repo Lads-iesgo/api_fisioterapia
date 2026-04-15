@@ -117,7 +117,7 @@ export const createUser = async (
         senha_hash,
         telefone,
         cpf,
-        semestre,
+        semestre: semestre || null,
         perfil_id: Number(perfil_id),
       },
       select: {

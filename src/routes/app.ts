@@ -41,7 +41,7 @@ app.use("/paciente", authMiddleware, readOnlyForStudents, clientRoutes);
 app.use("/perfil", authMiddleware, checkRole("professor", "coordenador", "admin"), perfilRoutes);
 app.use("/consulta", authMiddleware, readOnlyForStudents, applyConsultaDataIsolation, consultaRoutes);
 app.use("/horario", authMiddleware, readOnlyForStudents, horarioRoutes);
-app.use("/indisponibilidade", authMiddleware, readOnlyForStudents, indisponibilidadeRoutes);
+app.use("/indisponibilidade", authMiddleware, indisponibilidadeRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

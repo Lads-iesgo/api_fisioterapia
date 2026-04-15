@@ -33,7 +33,7 @@ router.post(
     body("senha_hash").trim().notEmpty().withMessage("Senha é obrigatória."),
     body("telefone").trim().notEmpty().withMessage("Telefone é obrigatório."),
     body("cpf").trim().notEmpty().withMessage("CPF é obrigatório."),
-    body("semestre").trim().notEmpty().withMessage("Semestre é obrigatório."),
+    body("semestre").optional({ values: "falsy" }).trim(),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -55,7 +55,7 @@ router.post(
           senha_hash: senha_hashFinal,
           telefone,
           cpf,
-          semestre,
+          semestre: semestre || null,
           perfil_id: 2, // Perfil padrão para aluno/fisioterapeuta
         },
       });

@@ -58,6 +58,19 @@ export const createConsulta = async (
 			data_consulta = data_consulta.split("T")[0];
 		}
 
+		// Verifica se o dia está marcado como indisponível
+		const dataAlvo = new Date((data_consulta as string) + "T00:00:00.000Z");
+		const diaIndisponivel = await prisma.indisponibilidade.findFirst({
+			where: { data_indisponivel: dataAlvo },
+		});
+
+		if (diaIndisponivel) {
+			res.status(409).json({
+				message: "Não é possível cadastrar consulta neste dia. O dia está marcado como indisponível.",
+			});
+			return;
+		}
+
 		const newConsulta = await prisma.consulta.create({
 			data: {
 				paciente_id: Number(paciente_id),
