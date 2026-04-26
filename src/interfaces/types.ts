@@ -20,6 +20,7 @@ export interface UserInterface {
   cpf: string;
   semestre?: string | null;
   perfil_id: number;
+  ativo?: number;
 }
 
 export interface PerfilInterface {
@@ -32,7 +33,7 @@ export interface ConsultaInterface {
   paciente_id: number;
   data_consulta: Date | string;
   horario_id: number;
-  fisioterapeuta_id: number;
+  aluno_id: number;
   status?: string;
 }
 

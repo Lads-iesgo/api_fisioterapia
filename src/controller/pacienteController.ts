@@ -95,6 +95,7 @@ export const updatePaciente = async (
 			"cpf",
 			"cep",
 			"endereco",
+			"ativo",
 		];
 
 		const updateData: any = {};
@@ -102,6 +103,8 @@ export const updatePaciente = async (
 			if (req.body[campo] !== undefined) {
 				if (campo === "data_nascimento") {
 					updateData[campo] = parseDateSafe(req.body[campo]);
+				} else if (campo === "ativo") {
+					updateData[campo] = Number(req.body[campo]);
 				} else {
 					updateData[campo] =
 						campo === "genero"
