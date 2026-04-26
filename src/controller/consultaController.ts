@@ -50,7 +50,7 @@ export const createConsulta = async (
 			paciente_id,
 			data_consulta,
 			horario_id,
-			fisioterapeuta_id,
+			aluno_id,
 		}: ConsultaInterface = req.body;
 
 		// Converte para 'YYYY-MM-DD' se vier no formato ISO
@@ -76,7 +76,7 @@ export const createConsulta = async (
 				paciente_id: Number(paciente_id),
 				data_consulta: new Date((data_consulta as string) + "T00:00:00.000Z"),
 				horario_id: Number(horario_id),
-				fisioterapeuta_id: Number(fisioterapeuta_id),
+				aluno_id: Number(aluno_id),
 			},
 		});
 
@@ -104,7 +104,7 @@ export const updateConsulta = async (
 			"paciente_id",
 			"data_consulta",
 			"horario_id",
-			"fisioterapeuta_id",
+			"aluno_id",
 			"status",
 		];
 
@@ -119,7 +119,7 @@ export const updateConsulta = async (
 							: d,
 					);
 				} else if (
-					["paciente_id", "horario_id", "fisioterapeuta_id"].includes(campo)
+					["paciente_id", "horario_id", "aluno_id"].includes(campo)
 				) {
 					updateData[campo] = Number(req.body[campo]);
 				} else if (campo === "status") {

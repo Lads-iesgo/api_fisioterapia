@@ -22,6 +22,7 @@ export const getUsers = async (
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true,
       },
     });
     res.status(200).json(rows);
@@ -54,6 +55,7 @@ export const getUsersById = async (
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true,
       },
     });
 
@@ -128,6 +130,7 @@ export const createUser = async (
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true,
       },
     });
 
@@ -156,6 +159,7 @@ export const updateUser = async (
       cpf,
       semestre,
       perfil_id,
+      ativo,
     }: UserInterface = req.body;
 
     const updateData: any = {};
@@ -164,6 +168,7 @@ export const updateUser = async (
     if (telefone !== undefined) updateData.telefone = telefone;
     if (semestre !== undefined) updateData.semestre = semestre;
     if (perfil_id !== undefined) updateData.perfil_id = Number(perfil_id);
+    if (ativo !== undefined) updateData.ativo = Number(ativo);
 
     if (email !== undefined) {
       const existing = await prisma.usuario.findFirst({
@@ -203,6 +208,7 @@ export const updateUser = async (
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true,
       },
     });
 
@@ -238,6 +244,7 @@ export const getFisioterapeutas = async (
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true,
       },
     });
     res.status(200).json(rows);

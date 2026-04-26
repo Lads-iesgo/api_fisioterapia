@@ -24,6 +24,7 @@ model Usuario {
   cpf           String     @db.VarChar(14)
   semestre      String?    @db.VarChar(20)
   perfil_id     Int
+  ativo         Int?       @db.TinyInt
   consultas     Consulta[] @relation("Fisioterapeuta")
   perfil        Perfil     @relation(fields: [perfil_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_perfil")
 
@@ -41,6 +42,7 @@ model Paciente {
   cpf                String               @db.VarChar(14)
   cep                String?              @db.VarChar(10)
   endereco           String?              @db.VarChar(255)
+  ativo              Int?                 @db.TinyInt
   consultas          Consulta[]
   paciente_documento paciente_documento[]
 
@@ -60,15 +62,15 @@ model Consulta {
   paciente_id       Int
   data_consulta     DateTime?          @db.Date
   horario_id        Int
-  fisioterapeuta_id Int
+  aluno_id          Int
   status            consulta_status?
   horario           HorarioAgendamento @relation(fields: [horario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_horario_agendamento1")
   paciente          Paciente           @relation(fields: [paciente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_paciente1")
-  fisioterapeuta    Usuario            @relation("Fisioterapeuta", fields: [fisioterapeuta_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_usuario1")
+  usuario           Usuario            @relation("Fisioterapeuta", fields: [aluno_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_usuario1")
 
   @@index([horario_id], map: "fk_consulta_horario_agendamento1_idx")
   @@index([paciente_id], map: "fk_consulta_paciente1_idx")
-  @@index([fisioterapeuta_id], map: "fk_consulta_usuario1_idx")
+  @@index([aluno_id], map: "fk_consulta_usuario1_idx")
   @@map("consulta")
 }
 
