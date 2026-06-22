@@ -37,9 +37,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
+dotenv.config(); // Garanta que isso seja chamado antes de qualquer código que use process.env
 const app_1 = __importDefault(require("./routes/app"));
-dotenv.config();
+// A conexão com o banco é inicializada quando o módulo db.ts é carregado,
+// o que acontece quando os controllers são importados pelo app.ts.
 const PORT = process.env.PORT || 3333;
 app_1.default.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Servidor está rodando em http://localhost:${PORT}`);
+    // A mensagem de conexão com o banco de dados do db.ts deve aparecer antes desta se tudo estiver correto.
 });
